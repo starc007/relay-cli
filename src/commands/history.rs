@@ -18,9 +18,15 @@ struct CurrencyAmount {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct RequestData {
+struct RequestMetadata {
     currency_in: Option<CurrencyAmount>,
     currency_out: Option<CurrencyAmount>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RequestData {
+    metadata: Option<RequestMetadata>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -67,7 +73,7 @@ pub async fn run(
 
         let status = req.status.as_deref().unwrap_or("-");
 
-        let route = req.data.as_ref().map(|d| {
+        let route = req.data.as_ref().and_then(|d| d.metadata.as_ref()).map(|d| {
             let cin = d.currency_in.as_ref().map(|c| {
                 format!(
                     "{} {}({})",
