@@ -58,6 +58,11 @@ enum Command {
         #[arg(long)]
         recipient: Option<String>,
     },
+    Price {
+        token: String,
+        #[arg(long, value_name = "CHAIN_ID")]
+        chain: u64,
+    },
     Tokens {
         #[arg(long, value_name = "CHAIN_ID")]
         chain: u64,
@@ -142,6 +147,9 @@ async fn main() -> Result<()> {
             commands::quote::print_quote(&quote);
             println!("\nexecuting...");
             commands::execute::run(&client, quote, signer).await?;
+        }
+        Command::Price { token, chain } => {
+            commands::price::run(&client, &token, chain).await?;
         }
         Command::Tokens { chain, filter, verified } => {
             commands::tokens::run(&client, chain, filter.as_deref(), verified).await?;
