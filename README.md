@@ -17,17 +17,13 @@ Download from [releases](https://github.com/saurabh/relay-cli/releases) and put 
 ## Setup
 
 ```sh
-# Set your wallet private key
-export RELAY_PRIVATE_KEY=0x...
-
-# Optional: API key for higher rate limits
-export RELAY_API_KEY=your-key
-
-# Or persist via config
-relay config set --api-key your-key
+relay config set --private-key 0x...
+relay config set --api-key your-key   # optional, for higher rate limits
 ```
 
-Config is stored at `~/.relay/config.json`.
+Config is stored at `~/.relay/config.json`. Private key is masked in `relay config show`.
+
+RPC URLs for 11 major EVM chains are bundled by default (Ethereum, Base, Arbitrum, Optimism, Polygon, Avalanche, BSC, zkSync, Scroll, Linea, Zora). No extra setup needed to bridge on these chains.
 
 ## Commands
 
@@ -58,22 +54,28 @@ Get USD price for a token.
 ```sh
 relay price ETH --chain 1
 relay price USDC --chain 8453
-relay price 0xa5D0016B11AA203a25fE39E548573DdFB0e77702 --chain 1
+relay price 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 --chain 1
 ```
 
 ### `relay quote`
 
-Get a quote for bridging or swapping without executing.
+Get a quote without executing. `--amount` is in human-readable units.
 
 ```sh
 relay quote \
   --from-chain 1 --from-currency ETH \
   --to-chain 8453 --to-currency ETH \
-  --amount 1000000000000000000 \
+  --amount 0.001 \
+  --user 0xYourAddress
+
+relay quote \
+  --from-chain 1 --from-currency USDC \
+  --to-chain 42161 --to-currency USDC \
+  --amount 100 \
   --user 0xYourAddress
 ```
 
-Token symbols (`ETH`, `USDC`, `WBTC`, etc.) are resolved automatically. Use `--amount` in wei.
+Token symbols (`ETH`, `USDC`, `WBTC`, etc.) resolve to contract addresses automatically.
 
 ### `relay bridge`
 
@@ -83,19 +85,19 @@ Quote and execute a cross-chain bridge/swap.
 relay bridge \
   --from-chain 1 --from-currency ETH \
   --to-chain 8453 --to-currency ETH \
-  --amount 1000000000000000000 \
+  --amount 0.001 \
   --user 0xYourAddress
 
-# To a different recipient
-relay bridge ... --recipient 0xOtherAddress
+# Different recipient
+relay bridge \
+  --from-chain 1 --from-currency ETH \
+  --to-chain 8453 --to-currency ETH \
+  --amount 0.001 \
+  --user 0xYourAddress \
+  --recipient 0xOtherAddress
 ```
 
-Requires `RELAY_PRIVATE_KEY`. Each chain needs an RPC URL set via env:
-
-```sh
-export RPC_1=https://eth-mainnet.g.alchemy.com/v2/your-key
-export RPC_8453=https://base-mainnet.g.alchemy.com/v2/your-key
-```
+Requires a private key set via `relay config set --private-key` or `RELAY_PRIVATE_KEY` env var.
 
 ### `relay status`
 
@@ -127,29 +129,50 @@ Status filter options: `success`, `failure`, `refund`, `pending`, `depositing`.
 
 ```sh
 relay config show
+relay config set --private-key 0x...
 relay config set --api-key your-key
 relay config set --testnet true
+
+# RPC management
+relay config list-rpcs
+relay config set-rpc --chain 1 --url https://eth-mainnet.g.alchemy.com/v2/key
 ```
 
 ## Global flags
 
-| Flag            | Env                 | Description        |
-| --------------- | ------------------- | ------------------ |
-| `--api-key`     | `RELAY_API_KEY`     | Relay API key      |
-| `--private-key` | `RELAY_PRIVATE_KEY` | Wallet private key |
-| `--testnet`     | —                   | Use testnet API    |
+| Flag            | Env                 | Description                      |
+| --------------- | ------------------- | -------------------------------- |
+| `--api-key`     | `RELAY_API_KEY`     | Relay API key (higher rate limit) |
+| `--private-key` | `RELAY_PRIVATE_KEY` | Wallet private key               |
+| `--testnet`     | —                   | Use testnet API                  |
 
 ## RPC URLs
 
-Each chain you transact on needs an RPC URL. Set via env var `RPC_<chainId>`:
+Default public RPCs are bundled for these chains:
+
+| Chain ID | Network   |
+| -------- | --------- |
+| 1        | Ethereum  |
+| 10       | Optimism  |
+| 56       | BSC       |
+| 137      | Polygon   |
+| 324      | zkSync    |
+| 8453     | Base      |
+| 42161    | Arbitrum  |
+| 43114    | Avalanche |
+| 59144    | Linea     |
+| 534352   | Scroll    |
+| 7777777  | Zora      |
+
+Override any or add others:
 
 ```sh
-export RPC_1=https://...       # Ethereum
-export RPC_8453=https://...    # Base
-export RPC_42161=https://...   # Arbitrum
-export RPC_10=https://...      # Optimism
+relay config set-rpc --chain 1 --url https://eth-mainnet.g.alchemy.com/v2/key
+relay config set-rpc --chain 81457 --url https://rpc.blast.io
 ```
+
+Env var `RPC_<chainId>` takes priority over config if both are set.
 
 ## License
 
-HEHEHE
+MIT
