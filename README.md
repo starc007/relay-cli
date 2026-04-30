@@ -7,7 +7,7 @@ CLI for the [Relay](https://relay.link) cross-chain bridge/swap protocol. Bridge
 ### One-liner (macOS / Linux)
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/saurabh/relay-cli/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/starc007/relay-cli/main/install.sh | sh
 ```
 
 Detects your OS and architecture, downloads the right binary, installs to `/usr/local/bin/relay`.
@@ -20,7 +20,7 @@ cargo install --path .
 
 ### Manual
 
-Download a binary from [releases](https://github.com/saurabh/relay-cli/releases), extract, and put `relay` in your `$PATH`.
+Download a binary from [releases](https://github.com/starc007/relay-cli/releases), extract, and put `relay` in your `$PATH`.
 
 ## Setup
 
