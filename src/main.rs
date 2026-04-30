@@ -58,6 +58,11 @@ enum Command {
         #[arg(long)]
         recipient: Option<String>,
     },
+    Status {
+        request_id: String,
+        #[arg(long, short, help = "poll until terminal state")]
+        watch: bool,
+    },
     Config {
         #[command(subcommand)]
         cmd: commands::config::ConfigCmd,
@@ -125,6 +130,9 @@ async fn main() -> Result<()> {
             commands::quote::print_quote(&quote);
             println!("\nexecuting...");
             commands::execute::run(&client, quote, signer).await?;
+        }
+        Command::Status { request_id, watch } => {
+            commands::status::run(&client, &request_id, watch).await?;
         }
         Command::Config { cmd } => {
             commands::config::run(cmd).await?;
