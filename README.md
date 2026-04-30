@@ -58,7 +58,7 @@ Get USD price for a token.
 ```sh
 relay price ETH --chain 1
 relay price USDC --chain 8453
-relay price 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 --chain 1
+relay price 0xa5D0016B11AA203a25fE39E548573DdFB0e77702 --chain 1
 ```
 
 ### `relay quote`

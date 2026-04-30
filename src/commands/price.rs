@@ -8,8 +8,8 @@ struct PriceResponse {
 }
 
 pub async fn run(client: &RelayClient, input: &str, chain_id: u64) -> Result<()> {
-    let address = token::resolve(client, input, chain_id).await?;
-    let url = client.url(&format!("/currencies/token/price?address={}&chainId={}", address, chain_id));
+    let token = token::resolve(client, input, chain_id).await?;
+    let url = client.url(&format!("/currencies/token/price?address={}&chainId={}", token.address, chain_id));
     let resp: PriceResponse = client.http.get(&url).send().await?.json().await?;
 
     match resp.price {
