@@ -29,7 +29,6 @@ alloy = { version = "0.8", features = [
     "network",
     "providers",
     "rpc-types",
-    "signers",
     "signer-local",
     "eip712",
     "dyn-abi",
