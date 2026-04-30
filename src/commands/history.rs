@@ -103,8 +103,8 @@ pub async fn run(
 }
 
 fn format_ts(s: &str) -> String {
-    use chrono::{DateTime, Utc};
+    use chrono::{DateTime, Local, Utc};
     s.parse::<DateTime<Utc>>()
-        .map(|dt| dt.format("%Y-%m-%d %H:%M").to_string())
+        .map(|dt| dt.with_timezone(&Local).format("%Y-%m-%d %H:%M").to_string())
         .unwrap_or_else(|_| s[..16.min(s.len())].to_string())
 }
