@@ -13,6 +13,13 @@ pub enum ConfigCmd {
         #[arg(long)]
         testnet: Option<bool>,
     },
+    SetRpc {
+        #[arg(long, value_name = "CHAIN_ID")]
+        chain: u64,
+        #[arg(long, value_name = "URL")]
+        url: String,
+    },
+    ListRpcs,
 }
 
 pub async fn run(cmd: ConfigCmd) -> Result<()> {
@@ -38,6 +45,22 @@ pub async fn run(cmd: ConfigCmd) -> Result<()> {
             }
             config::save(&cfg)?;
             println!("config saved");
+        }
+        ConfigCmd::SetRpc { chain, url } => {
+            let mut cfg = config::load()?;
+            cfg.rpcs.insert(chain, url.clone());
+            config::save(&cfg)?;
+            println!("rpc for chain {} set to {}", chain, url);
+        }
+        ConfigCmd::ListRpcs => {
+            let cfg = config::load()?;
+            let mut chains: Vec<_> = cfg.rpcs.iter().collect();
+            chains.sort_by_key(|(id, _)| *id);
+            println!("{:<12} {}", "CHAIN ID", "RPC URL");
+            println!("{}", "-".repeat(70));
+            for (id, url) in chains {
+                println!("{:<12} {}", id, url);
+            }
         }
     }
     Ok(())

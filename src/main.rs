@@ -157,7 +157,7 @@ async fn main() -> Result<()> {
             println!("quote:");
             commands::quote::print_quote(&quote);
             println!("\nexecuting...");
-            commands::execute::run(&client, quote, signer).await?;
+            commands::execute::run(&client, &cfg, quote, signer).await?;
         }
         Command::History { user, limit, status } => {
             commands::history::run(&client, &user, limit, status.as_deref()).await?;

@@ -8,9 +8,9 @@ use alloy::{
     signers::{local::PrivateKeySigner, Signer},
 };
 use indicatif::{ProgressBar, ProgressStyle};
-use crate::lib::{client::RelayClient, types::{Execute, StepKind}};
+use crate::lib::{client::RelayClient, config::Config, types::{Execute, StepKind}};
 
-pub async fn run(client: &RelayClient, quote: Execute, signer: PrivateKeySigner) -> Result<()> {
+pub async fn run(client: &RelayClient, cfg: &Config, quote: Execute, signer: PrivateKeySigner) -> Result<()> {
     let wallet = EthereumWallet::from(signer.clone());
 
     for step in &quote.steps {
@@ -35,7 +35,7 @@ pub async fn run(client: &RelayClient, quote: Execute, signer: PrivateKeySigner)
             match step.kind {
                 StepKind::Transaction => {
                     let chain_id = data.chain_id.unwrap_or(1);
-                    let rpc_url = rpc_url_for_chain(chain_id)?;
+                    let rpc_url = rpc_url_for_chain(cfg, chain_id)?;
 
                     let provider = ProviderBuilder::new()
                         .wallet(wallet.clone())
@@ -129,15 +129,12 @@ pub async fn run(client: &RelayClient, quote: Execute, signer: PrivateKeySigner)
     Ok(())
 }
 
-fn rpc_url_for_chain(chain_id: u64) -> Result<String> {
-    if let Ok(val) = std::env::var(format!("RPC_{}", chain_id)) {
-        return Ok(val);
-    }
-    bail!(
-        "no RPC URL for chain {}. Set RPC_{} env var.",
-        chain_id,
-        chain_id
-    )
+fn rpc_url_for_chain(cfg: &Config, chain_id: u64) -> Result<String> {
+    crate::lib::config::rpc_for_chain(cfg, chain_id)
+        .ok_or_else(|| anyhow::anyhow!(
+            "no RPC for chain {}. Run: relay config set-rpc --chain {} --url <url>",
+            chain_id, chain_id
+        ))
 }
 
 async fn post_step_check(
