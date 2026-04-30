@@ -1,16 +1,17 @@
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use alloy::{
+    dyn_abi::TypedData,
     network::EthereumWallet,
     primitives::{Address, U256},
     providers::{Provider, ProviderBuilder},
     rpc::types::TransactionRequest,
-    signers::local::PrivateKeySigner,
+    signers::{local::PrivateKeySigner, Signer},
 };
 use indicatif::{ProgressBar, ProgressStyle};
 use crate::lib::{client::RelayClient, types::{Execute, StepKind}};
 
 pub async fn run(client: &RelayClient, quote: Execute, signer: PrivateKeySigner) -> Result<()> {
-    let wallet = EthereumWallet::from(signer);
+    let wallet = EthereumWallet::from(signer.clone());
 
     for step in &quote.steps {
         let spinner = ProgressBar::new_spinner();
@@ -78,7 +79,45 @@ pub async fn run(client: &RelayClient, quote: Execute, signer: PrivateKeySigner)
                     post_step_check(client, &step.id, &item.check).await?;
                 }
                 StepKind::Signature => {
-                    bail!("signature steps not yet implemented");
+                    let sign = data.sign.as_ref().context("signature step missing sign data")?;
+                    let post = data.post.as_ref().context("signature step missing post data")?;
+
+                    let sig_kind = sign.signature_kind.as_deref().unwrap_or("eip191");
+                    let signature = match sig_kind {
+                        "eip712" => {
+                            let typed_data: TypedData = serde_json::from_value(serde_json::json!({
+                                "domain": sign.domain,
+                                "types": sign.types,
+                                "primaryType": sign.primary_type,
+                                "message": sign.value,
+                            }))
+                            .context("failed to parse eip712 typed data")?;
+                            let hash = typed_data
+                                .eip712_signing_hash()
+                                .context("failed to compute eip712 hash")?;
+                            signer.sign_hash(&hash).await?.to_string()
+                        }
+                        _ => {
+                            let message = sign.message.as_deref().unwrap_or_default();
+                            signer.sign_message(message.as_bytes()).await?.to_string()
+                        }
+                    };
+
+                    let endpoint = post.endpoint.as_deref().context("post missing endpoint")?;
+                    let mut body = post.body.clone().unwrap_or(serde_json::Value::Object(Default::default()));
+                    if let serde_json::Value::Object(ref mut map) = body {
+                        map.insert("signature".to_string(), serde_json::Value::String(signature.clone()));
+                    }
+
+                    let method = post.method.as_deref().unwrap_or("POST");
+                    let url = client.url(endpoint);
+                    let req = match method.to_uppercase().as_str() {
+                        "GET" => client.http.get(&url),
+                        _ => client.http.post(&url),
+                    };
+                    req.json(&body).send().await?;
+
+                    spinner.set_message(format!("{} — signed: {}…", step.action, &signature[..10]));
                 }
             }
         }

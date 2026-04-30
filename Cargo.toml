@@ -32,6 +32,7 @@ alloy = { version = "0.8", features = [
     "signers",
     "signer-local",
     "eip712",
+    "dyn-abi",
 ] }
 
 # Config
