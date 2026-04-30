@@ -10,16 +10,12 @@ CURRENT=$(grep '^version' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
 if [ -n "$1" ]; then
   VERSION="$1"
 else
-  printf "current version: %s\nnew version: " "$CURRENT"
+  printf "current version: %s\nnew version (enter to keep): " "$CURRENT"
   read -r VERSION
 fi
 
-if [ -z "$VERSION" ]; then
-  echo "version required"
-  exit 1
-fi
-
-# Strip leading v if provided
+# Default to current if empty
+VERSION="${VERSION:-$CURRENT}"
 VERSION="${VERSION#v}"
 
 echo "releasing v$VERSION..."
@@ -30,17 +26,20 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   exit 1
 fi
 
-# Update version in Cargo.toml
-sed -i '' "s/^version = \"$CURRENT\"/version = \"$VERSION\"/" Cargo.toml
+# Bump Cargo.toml only if version changed
+if [ "$VERSION" != "$CURRENT" ]; then
+  sed -i '' "s/^version = \"$CURRENT\"/version = \"$VERSION\"/" Cargo.toml
+  cargo build -q 2>/dev/null || true
+  git add Cargo.toml Cargo.lock
+  git commit -m "chore: bump version to v$VERSION"
+fi
 
-# Update Cargo.lock
-cargo update -p relay-cli --precise "$VERSION" 2>/dev/null || cargo build -q 2>/dev/null || true
+# Check tag doesn't already exist
+if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+  echo "error: tag v$VERSION already exists. choose a different version."
+  exit 1
+fi
 
-# Commit version bump
-git add Cargo.toml Cargo.lock
-git commit -m "chore: bump version to v$VERSION"
-
-# Tag and push
 git tag "v$VERSION"
 git push origin main
 git push origin "v$VERSION"
