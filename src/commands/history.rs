@@ -28,7 +28,7 @@ struct RequestData {
 struct Request {
     id: Option<String>,
     status: Option<String>,
-    created_at: Option<u64>,
+    created_at: Option<String>,
     data: Option<RequestData>,
 }
 
@@ -61,7 +61,8 @@ pub async fn run(
 
     for req in &requests {
         let time = req.created_at
-            .map(|t| format_ts(t))
+            .as_deref()
+            .map(format_ts)
             .unwrap_or_else(|| "-".to_string());
 
         let status = req.status.as_deref().unwrap_or("-");
@@ -95,9 +96,9 @@ pub async fn run(
     Ok(())
 }
 
-fn format_ts(ts: u64) -> String {
+fn format_ts(s: &str) -> String {
     use chrono::{DateTime, Utc};
-    DateTime::<Utc>::from_timestamp(ts as i64, 0)
+    s.parse::<DateTime<Utc>>()
         .map(|dt| dt.format("%Y-%m-%d %H:%M").to_string())
-        .unwrap_or_else(|| "-".to_string())
+        .unwrap_or_else(|_| s[..16.min(s.len())].to_string())
 }
