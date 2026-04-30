@@ -12,6 +12,12 @@ curl -fsSL https://raw.githubusercontent.com/starc007/relay-cli/main/install.sh 
 
 Detects your OS and architecture, downloads the right binary, installs to `/usr/local/bin/relay`.
 
+### AI Agent Skill
+
+```sh
+npx skills add starc007/relay-cli
+```
+
 ### From source
 
 ```sh
@@ -183,15 +189,11 @@ Env var `RPC_<chainId>` takes priority over config if both are set.
 
 ## AI Agent Skill
 
-A skill file for AI agents (Claude Code, Copilot, etc.) is included in this repo. Install it so your agent understands all relay-cli commands, token formats, and config without manual explanation.
+Install the skill so your AI agent (Claude Code, Copilot, etc.) understands relay-cli commands without manual explanation.
 
 ```sh
-mkdir -p ~/.claude/skills/relay-cli
-curl -fsSL https://raw.githubusercontent.com/starc007/relay-cli/main/skills/relay-cli/SKILL.md \
-  -o ~/.claude/skills/relay-cli/SKILL.md
+npx skills add starc007/relay-cli
 ```
-
-Once installed, the agent will know how to use relay-cli in any session automatically.
 
 ## License
 
