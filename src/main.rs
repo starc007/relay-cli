@@ -58,6 +58,14 @@ enum Command {
         #[arg(long)]
         recipient: Option<String>,
     },
+    History {
+        #[arg(long, env = "RELAY_WALLET")]
+        user: String,
+        #[arg(long, default_value = "20")]
+        limit: u32,
+        #[arg(long, help = "filter by status: success, failure, refund, pending, depositing")]
+        status: Option<String>,
+    },
     Price {
         token: String,
         #[arg(long, value_name = "CHAIN_ID")]
@@ -147,6 +155,9 @@ async fn main() -> Result<()> {
             commands::quote::print_quote(&quote);
             println!("\nexecuting...");
             commands::execute::run(&client, quote, signer).await?;
+        }
+        Command::History { user, limit, status } => {
+            commands::history::run(&client, &user, limit, status.as_deref()).await?;
         }
         Command::Price { token, chain } => {
             commands::price::run(&client, &token, chain).await?;
