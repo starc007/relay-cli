@@ -41,10 +41,12 @@ fn default_rpcs() -> HashMap<u64, String> {
 pub fn load() -> Result<Config> {
     let path = config_path();
     if !path.exists() {
-        return Ok(Config {
+        let cfg = Config {
             rpcs: default_rpcs(),
             ..Default::default()
-        });
+        };
+        save(&cfg)?;
+        return Ok(cfg);
     }
     let raw = std::fs::read_to_string(&path)
         .with_context(|| format!("failed to read {}", path.display()))?;
