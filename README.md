@@ -2,6 +2,8 @@
 
 CLI for the [Relay](https://relay.link) cross-chain bridge/swap protocol. Bridge and swap assets across 85+ chains from your terminal.
 
+![relay-cli demo](demo.gif)
+
 ## Install
 
 ### One-liner (macOS / Linux)
