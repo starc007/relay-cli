@@ -100,12 +100,14 @@ async fn main() -> Result<()> {
             user,
             recipient,
         } => {
+            let from_addr = lib::token::resolve(&client, &from_currency, from_chain).await?;
+            let to_addr = lib::token::resolve(&client, &to_currency, to_chain).await?;
             let quote = commands::quote::run(
                 &client,
                 from_chain,
-                &from_currency,
+                &from_addr,
                 to_chain,
-                &to_currency,
+                &to_addr,
                 &amount,
                 &user,
                 recipient.as_deref(),
@@ -122,13 +124,15 @@ async fn main() -> Result<()> {
             user,
             recipient,
         } => {
+            let from_addr = lib::token::resolve(&client, &from_currency, from_chain).await?;
+            let to_addr = lib::token::resolve(&client, &to_currency, to_chain).await?;
             let signer = lib::wallet::load_signer(cli.private_key.as_deref())?;
             let quote = commands::quote::run(
                 &client,
                 from_chain,
-                &from_currency,
+                &from_addr,
                 to_chain,
-                &to_currency,
+                &to_addr,
                 &amount,
                 &user,
                 recipient.as_deref(),
