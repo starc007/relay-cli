@@ -95,7 +95,8 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     let cfg = lib::config::load()?;
-    let api_key = cli.api_key.or(cfg.api_key);
+    let api_key = cli.api_key.or(cfg.api_key.clone());
+    let private_key = cli.private_key.or(cfg.private_key.clone());
     let testnet = cli.testnet || cfg.testnet.unwrap_or(false);
 
     let client = lib::client::RelayClient::new(api_key.as_deref(), testnet)?;
@@ -141,7 +142,7 @@ async fn main() -> Result<()> {
             let from = lib::token::resolve(&client, &from_currency, from_chain).await?;
             let to = lib::token::resolve(&client, &to_currency, to_chain).await?;
             let raw_amount = lib::token::to_raw(&amount, from.decimals)?;
-            let signer = lib::wallet::load_signer(cli.private_key.as_deref())?;
+            let signer = lib::wallet::load_signer(private_key.as_deref())?;
             let quote = commands::quote::run(
                 &client,
                 from_chain,
