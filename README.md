@@ -154,11 +154,11 @@ relay config set-rpc --chain 1 --url https://eth-mainnet.g.alchemy.com/v2/key
 
 ## Global flags
 
-| Flag            | Env                 | Description                      |
-| --------------- | ------------------- | -------------------------------- |
+| Flag            | Env                 | Description                       |
+| --------------- | ------------------- | --------------------------------- |
 | `--api-key`     | `RELAY_API_KEY`     | Relay API key (higher rate limit) |
-| `--private-key` | `RELAY_PRIVATE_KEY` | Wallet private key               |
-| `--testnet`     | —                   | Use testnet API                  |
+| `--private-key` | `RELAY_PRIVATE_KEY` | Wallet private key                |
+| `--testnet`     | —                   | Use testnet API                   |
 
 ## RPC URLs
 
@@ -186,14 +186,6 @@ relay config set-rpc --chain 81457 --url https://rpc.blast.io
 ```
 
 Env var `RPC_<chainId>` takes priority over config if both are set.
-
-## AI Agent Skill
-
-Install the skill so your AI agent (Claude Code, Copilot, etc.) understands relay-cli commands without manual explanation.
-
-```sh
-npx skills add starc007/relay-cli
-```
 
 ## License
 
