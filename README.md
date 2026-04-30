@@ -181,6 +181,18 @@ relay config set-rpc --chain 81457 --url https://rpc.blast.io
 
 Env var `RPC_<chainId>` takes priority over config if both are set.
 
+## AI Agent Skill
+
+A skill file for AI agents (Claude Code, Copilot, etc.) is included in this repo. Install it so your agent understands all relay-cli commands, token formats, and config without manual explanation.
+
+```sh
+mkdir -p ~/.claude/skills/relay-cli
+curl -fsSL https://raw.githubusercontent.com/starc007/relay-cli/main/skills/relay-cli/SKILL.md \
+  -o ~/.claude/skills/relay-cli/SKILL.md
+```
+
+Once installed, the agent will know how to use relay-cli in any session automatically.
+
 ## License
 
 MIT
