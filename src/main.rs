@@ -22,6 +22,7 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Command {
+    Update,
     Chains {
         #[arg(long, short)]
         filter: Option<String>,
@@ -102,6 +103,9 @@ async fn main() -> Result<()> {
     let client = lib::client::RelayClient::new(api_key.as_deref(), testnet)?;
 
     match cli.command {
+        Command::Update => {
+            commands::update::run(&client.http).await?;
+        }
         Command::Chains { filter } => {
             commands::chains::run(&client, filter.as_deref()).await?;
         }

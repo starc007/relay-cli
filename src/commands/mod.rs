@@ -6,3 +6,4 @@ pub mod price;
 pub mod quote;
 pub mod status;
 pub mod tokens;
+pub mod update;
