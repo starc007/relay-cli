@@ -24,10 +24,11 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 # Ethereum / wallet
-alloy = { version = "0.8", features = [
+alloy = { version = "0.8", default-features = false, features = [
     "consensus",
     "network",
     "providers",
+    "reqwest-rustls-tls",
     "rpc-types",
     "signer-local",
     "eip712",
