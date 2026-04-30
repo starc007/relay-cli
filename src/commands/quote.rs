@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use serde_json::json;
 use crate::lib::client::RelayClient;
 use crate::lib::types::Execute;
@@ -25,7 +25,28 @@ pub async fn run(
     });
 
     let url = client.url("/quote");
-    let quote: Execute = client.http.post(&url).json(&body).send().await?.json().await?;
+    let resp = client.http.post(&url).json(&body).send().await
+        .context("failed to reach Relay API — check your internet connection")?;
+
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let text = resp.text().await.unwrap_or_default();
+        anyhow::bail!("quote failed (HTTP {}): {}", status, text.trim());
+    }
+
+    let quote: Execute = resp.json().await
+        .context("unexpected response format from /quote")?;
+
+    if let Some(errors) = &quote.errors {
+        if !errors.is_empty() {
+            let msg = errors.iter()
+                .filter_map(|e| e.message.as_deref())
+                .collect::<Vec<_>>()
+                .join(", ");
+            anyhow::bail!("quote error: {}", msg);
+        }
+    }
+
     Ok(quote)
 }
 
