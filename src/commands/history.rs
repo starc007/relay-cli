@@ -96,25 +96,8 @@ pub async fn run(
 }
 
 fn format_ts(ts: u64) -> String {
-    use std::time::{Duration, UNIX_EPOCH};
-    let d = UNIX_EPOCH + Duration::from_secs(ts);
-    let secs = d.duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
-    let (y, mo, day, h, m) = epoch_to_parts(secs);
-    format!("{:04}-{:02}-{:02} {:02}:{:02}", y, mo, day, h, m)
-}
-
-fn epoch_to_parts(secs: u64) -> (u64, u64, u64, u64, u64) {
-    let s = secs % 60;
-    let _ = s;
-    let mins = secs / 60;
-    let m = mins % 60;
-    let hours = mins / 60;
-    let h = hours % 24;
-    let days = hours / 24;
-    // Approximate date from epoch days
-    let y = 1970 + days / 365;
-    let remaining = days % 365;
-    let mo = (remaining / 30) + 1;
-    let day = (remaining % 30) + 1;
-    (y, mo, day, h, m)
+    use chrono::{DateTime, Utc};
+    DateTime::<Utc>::from_timestamp(ts as i64, 0)
+        .map(|dt| dt.format("%Y-%m-%d %H:%M").to_string())
+        .unwrap_or_else(|| "-".to_string())
 }

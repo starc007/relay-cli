@@ -38,6 +38,9 @@ alloy = { version = "0.8", features = [
 # Config
 dirs = "5"
 
+# Date/time
+chrono = "0.4"
+
 # Error handling
 anyhow = "1"
 thiserror = "1"
