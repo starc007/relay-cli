@@ -1,7 +1,7 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use alloy::{
     dyn_abi::TypedData,
-    network::EthereumWallet,
+    network::{EthereumWallet, TransactionBuilder},
     primitives::{Address, U256},
     providers::{Provider, ProviderBuilder},
     rpc::types::TransactionRequest,
@@ -37,7 +37,11 @@ pub async fn run(client: &RelayClient, cfg: &Config, quote: Execute, signer: Pri
                     let chain_id = data.chain_id.unwrap_or(1);
                     let rpc_url = rpc_url_for_chain(cfg, chain_id)?;
 
-                    let provider = ProviderBuilder::new()
+                    let base_provider = ProviderBuilder::new()
+                        .on_builtin(&rpc_url)
+                        .await?;
+
+                    let wallet_provider = ProviderBuilder::new()
                         .wallet(wallet.clone())
                         .on_builtin(&rpc_url)
                         .await?;
@@ -56,19 +60,47 @@ pub async fn run(client: &RelayClient, cfg: &Config, quote: Execute, signer: Pri
                         .parse::<U256>()
                         .unwrap_or_default();
 
-                    let calldata = data
+                    let calldata: alloy::primitives::Bytes = data
                         .data
                         .as_ref()
                         .and_then(|d| d.as_str())
                         .unwrap_or("0x")
-                        .to_string();
+                        .parse()
+                        .unwrap_or_default();
 
-                    let tx = TransactionRequest::default()
+                    let nonce = base_provider
+                        .get_transaction_count(signer.address())
+                        .await?;
+
+                    let max_fee_per_gas: u128 = data
+                        .max_fee_per_gas
+                        .as_deref()
+                        .and_then(|s| s.parse().ok())
+                        .unwrap_or(0);
+
+                    let max_priority_fee_per_gas: u128 = data
+                        .max_priority_fee_per_gas
+                        .as_deref()
+                        .and_then(|s| s.parse().ok())
+                        .unwrap_or(0);
+
+                    let gas_limit: u64 = data
+                        .gas
+                        .as_deref()
+                        .and_then(|s| s.parse().ok())
+                        .unwrap_or(300_000);
+
+                    let mut tx = TransactionRequest::default()
                         .to(to)
                         .value(value)
-                        .input(calldata.parse::<alloy::primitives::Bytes>().unwrap_or_default().into());
+                        .input(calldata.into())
+                        .nonce(nonce)
+                        .max_fee_per_gas(max_fee_per_gas)
+                        .max_priority_fee_per_gas(max_priority_fee_per_gas)
+                        .gas_limit(gas_limit);
+                    tx.set_chain_id(chain_id);
 
-                    let tx_hash = *provider.send_transaction(tx).await?.tx_hash();
+                    let tx_hash = *wallet_provider.send_transaction(tx).await?.tx_hash();
 
                     spinner.set_message(format!(
                         "{} — tx: {}",
