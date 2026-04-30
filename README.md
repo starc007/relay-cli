@@ -133,11 +133,11 @@ relay config set --testnet true
 
 ## Global flags
 
-| Flag | Env | Description |
-|---|---|---|
-| `--api-key` | `RELAY_API_KEY` | Relay API key |
+| Flag            | Env                 | Description        |
+| --------------- | ------------------- | ------------------ |
+| `--api-key`     | `RELAY_API_KEY`     | Relay API key      |
 | `--private-key` | `RELAY_PRIVATE_KEY` | Wallet private key |
-| `--testnet` | — | Use testnet API |
+| `--testnet`     | —                   | Use testnet API    |
 
 ## RPC URLs
 

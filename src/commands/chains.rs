@@ -3,7 +3,7 @@ use crate::lib::client::RelayClient;
 use crate::lib::types::ChainsResponse;
 
 pub async fn run(client: &RelayClient, filter: Option<&str>) -> Result<()> {
-    let url = client.url("/chains/v1");
+    let url = client.url("/chains");
     let resp: ChainsResponse = client.http.get(&url).send().await?.json().await?;
 
     let chains = resp.chains.iter().filter(|c| {
