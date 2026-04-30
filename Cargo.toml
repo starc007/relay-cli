@@ -1,0 +1,52 @@
+[package]
+name = "relay-cli"
+version = "0.1.0"
+edition = "2021"
+description = "CLI for the Relay cross-chain bridge/swap protocol"
+license = "MIT"
+
+[[bin]]
+name = "relay"
+path = "src/main.rs"
+
+[dependencies]
+# CLI
+clap = { version = "4", features = ["derive", "env"] }
+
+# Async
+tokio = { version = "1", features = ["full"] }
+
+# HTTP
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Ethereum / wallet
+alloy = { version = "0.8", features = [
+    "consensus",
+    "network",
+    "providers",
+    "rpc-types",
+    "signers",
+    "signer-local",
+    "eip712",
+] }
+
+# Config
+dirs = "5"
+
+# Error handling
+anyhow = "1"
+thiserror = "1"
+
+# Terminal output
+indicatif = "0.17"
+colored = "2"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+opt-level = "z"
