@@ -58,6 +58,14 @@ enum Command {
         #[arg(long)]
         recipient: Option<String>,
     },
+    Tokens {
+        #[arg(long, value_name = "CHAIN_ID")]
+        chain: u64,
+        #[arg(long, short)]
+        filter: Option<String>,
+        #[arg(long, help = "show verified tokens only")]
+        verified: bool,
+    },
     Status {
         request_id: String,
         #[arg(long, short, help = "poll until terminal state")]
@@ -130,6 +138,9 @@ async fn main() -> Result<()> {
             commands::quote::print_quote(&quote);
             println!("\nexecuting...");
             commands::execute::run(&client, quote, signer).await?;
+        }
+        Command::Tokens { chain, filter, verified } => {
+            commands::tokens::run(&client, chain, filter.as_deref(), verified).await?;
         }
         Command::Status { request_id, watch } => {
             commands::status::run(&client, &request_id, watch).await?;
